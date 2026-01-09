@@ -16,7 +16,12 @@ const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
 
 // Middleware
 app.use(express.json());
-app.use(express.static('public')); // Serve static files from 'public' folder
+app.use(express.static(path.join(__dirname, 'public'))); // Serve static files from 'public' folder
+
+// Root route - serve index.html
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
 
 // API route to handle questions
 app.post('/api/ask', async (req, res) => {
@@ -58,8 +63,13 @@ app.get('/api/health', (req, res) => {
     res.json({ status: 'Server is running!' });
 });
 
-// Start server
-app.listen(PORT, () => {
-    console.log(`Server is running on http://localhost:${PORT}`);
-    console.log(`Visit http://localhost:${PORT} to use the Ask Gemini app`);
-});
+// Start server (only if not in serverless environment)
+if (process.env.NODE_ENV !== 'production') {
+    app.listen(PORT, () => {
+        console.log(`Server is running on http://localhost:${PORT}`);
+        console.log(`Visit http://localhost:${PORT} to use the Ask Gemini app`);
+    });
+}
+
+// Export for Vercel
+module.exports = app;
